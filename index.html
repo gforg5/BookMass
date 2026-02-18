@@ -57,12 +57,18 @@
               width: 100% !important; 
               margin: 0 !important; 
               display: block !important;
+              background-color: white !important;
             }
-            .pdf-chapter { 
+            .pdf-cover, .pdf-toc, .pdf-chapter {
+              display: flex !important;
+              background-color: white !important;
+            }
+            .pdf-toc, .pdf-chapter { 
               page-break-before: always; 
-              padding: 1in !important; 
-              min-height: 100vh; 
               position: relative;
+            }
+            .pdf-cover {
+              page-break-after: always;
             }
             p {
               orphans: 3;
