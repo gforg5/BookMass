@@ -11,12 +11,11 @@ export interface Book {
   title: string;
   author: string;
   genre: string;
-  coverImageUrl: string;
-  availableCovers: string[];
+  coverImageUrl?: string;
   description: string;
   chapters: Chapter[];
   createdAt: number;
 }
 
-export type GenerationStep = 'idle' | 'outlining' | 'painting' | 'writing' | 'selecting-cover' | 'completed' | 'error';
-export type Page = 'home' | 'about' | 'developer' | 'history';
+export type GenerationStep = 'idle' | 'outlining' | 'painting' | 'writing' | 'completed' | 'error';
+export type AppView = 'home' | 'history' | 'about' | 'developer' | 'book';
