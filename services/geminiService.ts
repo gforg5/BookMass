@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Book, Chapter } from "../types";
 
@@ -50,11 +49,13 @@ export const generateChapterContent = async (bookTitle: string, chapter: { title
   return response.text || "Content generation failed.";
 };
 
-export const generateCoverImage = async (title: string, genre: string, description: string): Promise<string> => {
-  const prompt = `A professional, high-quality book cover for a ${genre} novel titled "${title}". 
-  The theme is: ${description}. 
-  Cinematic lighting, artistic illustration, no text on the image except maybe stylized accents. 
-  Digital art style, evocative atmosphere.`;
+export const generateCoverImage = async (title: string, author: string, genre: string, description: string): Promise<string> => {
+  const prompt = `A professional, high-quality, high-aesthetic book cover for a ${genre} novel. 
+  Title: "${title}"
+  Author: "${author}"
+  Theme: ${description}
+  Visual Style: Cinematic lighting, evocative atmospheric illustration. 
+  Crucial Instruction: Please design the cover layout to include the title "${title}" and the author name "${author}" in a clear, stylish, and premium font that is beautifully integrated into the artwork. Professional typography is mandatory.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
