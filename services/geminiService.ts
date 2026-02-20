@@ -1,7 +1,9 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { Book, Chapter } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Always use the injected API key directly as per guidelines
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateBookOutline = async (title: string): Promise<Partial<Book>> => {
   const response = await ai.models.generateContent({

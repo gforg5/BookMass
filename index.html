@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +50,29 @@
         }
         .animate-orbit { animation: orbit 8s linear infinite; }
 
+        .chapter-content-box {
+            text-align: justify;
+            text-justify: inter-word;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+            word-wrap: break-word;
+        }
+
+        .chapter-content-box p {
+            text-align-last: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-cap {
+            float: left;
+            font-size: 5rem;
+            line-height: 0.8;
+            margin-top: 0.1em;
+            margin-right: 0.15em;
+            color: #0f172a;
+            font-weight: 900;
+        }
+
         @media print {
             .no-print { display: none !important; }
             body { background: white !important; padding: 0 !important; margin: 0 !important; }
@@ -59,16 +83,24 @@
               display: block !important;
               background-color: white !important;
             }
-            .pdf-cover, .pdf-toc, .pdf-chapter {
+            .pdf-page-break {
               display: flex !important;
+              flex-direction: column !important;
               background-color: white !important;
+              width: 100% !important;
+              margin: 0 !important;
+              padding: 1in !important;
+              min-height: 1050px !important;
+              box-sizing: border-box !important;
             }
-            .pdf-toc, .pdf-chapter { 
-              page-break-before: always; 
-              position: relative;
-            }
-            .pdf-cover {
+            .pdf-page-break { 
               page-break-after: always;
+            }
+            .pdf-page-break:last-child {
+              page-break-after: auto;
+            }
+            h1, h2, h3, p, span {
+              color: black !important;
             }
             p {
               orphans: 3;

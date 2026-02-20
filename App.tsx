@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Book, GenerationStep, AppView } from './types';
 import { generateBookOutline, generateChapterContent, generateCoverImage } from './services/geminiService';
@@ -97,13 +98,17 @@ const App: React.FC = () => {
       setStep('completed');
       setView('book');
       setProgress(100);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setStep('error');
+      // Graceful error message for the user without breaking UX
+      alert(`Failed to call the Gemini API: ${error.message || 'permission denied'}. Please check your environment configuration or try again.`);
+      setStep('idle');
     }
   };
 
   const cleanContent = (text: string) => {
+    // Robust cleaning to remove common LLM artifacts and markdown headers
     return text
       .replace(/^(Chapter|CHAPTER|Section|SECTION)\s+\d+[:.]?.*$/gm, '')
       .replace(/^[#*].*$/gm, '')
@@ -121,7 +126,7 @@ const App: React.FC = () => {
     }
 
     const opt = {
-      margin:       [0, 0, 0, 0], // Use zero margin for root and handle it via CSS padding for better control
+      margin:       0,
       filename:     `${book.title.replace(/\s+/g, '_')}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
       html2canvas:  { 
@@ -130,10 +135,10 @@ const App: React.FC = () => {
         logging: false,
         letterRendering: true,
         scrollY: 0,
-        windowWidth: 1000
+        windowWidth: 800
       },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], before: ['.pdf-chapter', '.pdf-toc'] }
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], before: ['.pdf-page-break'] }
     };
 
     try {
@@ -385,50 +390,50 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div id="book-content" className="prose prose-lg md:prose-2xl prose-slate max-w-4xl mx-auto serif-font bg-white shadow-sm print:shadow-none print:w-full">
+            <div id="book-content" className="max-w-4xl mx-auto bg-white shadow-sm print:shadow-none print:w-[816px] print:mx-0">
               {/* Cover Page */}
-              <div className="pdf-cover print:flex hidden min-h-[1050px] flex flex-col justify-center items-center text-center p-20">
-                 <h1 className="text-8xl font-black uppercase italic tracking-tighter mb-4 serif-font">{book.title}</h1>
-                 <p className="text-3xl font-bold uppercase tracking-[0.2em] mb-16 opacity-80">By {book.author}</p>
+              <div className="pdf-page-break pdf-cover min-h-[900px] md:min-h-[1050px] flex flex-col justify-center items-center text-center p-12 md:p-20 bg-white">
+                 <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter mb-4 serif-font leading-tight">{book.title}</h1>
+                 <p className="text-2xl md:text-3xl font-bold uppercase tracking-[0.2em] mb-16 opacity-80">By {book.author}</p>
                  <div className="w-24 h-1 bg-slate-900 mb-16"></div>
                  <p className="text-sm font-medium tracking-[0.8em] uppercase text-slate-300">A BookMass Original Publication</p>
               </div>
 
               {/* Table of Contents Page */}
-              <div className="pdf-toc print:flex hidden min-h-[1050px] flex flex-col justify-start items-center text-center p-20 pt-40">
-                 <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-24 serif-font">Table of Contents</h2>
-                 <div className="w-full max-w-2xl space-y-10">
+              <div className="pdf-page-break pdf-toc min-h-[900px] md:min-h-[1050px] flex flex-col justify-start items-center text-center p-12 md:p-20 pt-24 md:pt-40 bg-white">
+                 <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mb-16 md:mb-24 serif-font">Table of Contents</h2>
+                 <div className="w-full max-w-2xl space-y-8 md:space-y-10">
                     {book.chapters.map((chapter, idx) => (
-                      <div key={chapter.id} className="flex items-end gap-4 group">
-                         <span className="text-sm font-black uppercase tracking-[0.4em] text-slate-300 shrink-0">CHAPTER {idx + 1}</span>
-                         <div className="flex-grow border-b-2 border-dotted border-slate-100 mb-2"></div>
-                         <span className="text-2xl font-black italic text-slate-900 uppercase tracking-tighter shrink-0">{chapter.title}</span>
+                      <div key={chapter.id} className="flex items-end gap-2 md:gap-4 group">
+                         <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-slate-300 shrink-0">CHAPTER {idx + 1}</span>
+                         <div className="flex-grow border-b-2 border-dotted border-slate-100 mb-1 md:mb-2"></div>
+                         <span className="text-lg md:text-2xl font-black italic text-slate-900 uppercase tracking-tighter shrink-0">{chapter.title}</span>
+                         <div className="flex-grow border-b-2 border-dotted border-slate-100 mb-1 md:mb-2"></div>
+                         <span className="text-sm md:text-lg font-black text-slate-400">P. {idx + 3}</span>
                       </div>
                     ))}
                  </div>
-                 <div className="mt-auto text-slate-200 text-[10px] font-black tracking-[1em] uppercase">BOOKMASS GENESIS ARCHIVE</div>
+                 <div className="mt-auto pt-12 text-slate-200 text-[10px] font-black tracking-[1em] uppercase">BOOKMASS GENESIS ARCHIVE</div>
               </div>
 
               {/* Chapter Pages */}
               {book.chapters.map((chapter, idx) => {
-                const paragraphs = cleanContent(chapter.content).split('\n').filter(p => p.trim());
+                const paragraphs = cleanContent(chapter.content).split(/\n\n+/).filter(p => p.trim());
                 return (
-                  <div key={chapter.id} className="pdf-chapter mb-24 md:mb-48 relative min-h-screen p-6 md:p-20">
-                    <div className="flex flex-col items-center mb-16 md:mb-24 text-center">
-                       <span className="text-slate-400 font-black mb-6 uppercase tracking-[0.8em] text-xs opacity-100">SECTION {idx + 1}</span>
-                       <h3 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter italic uppercase break-words px-4 leading-none serif-font">{chapter.title}</h3>
-                       <div className="w-20 h-1.5 bg-[#0f172a] mt-12 md:mt-16 rounded-full"></div>
+                  <div key={chapter.id} className="pdf-page-break pdf-chapter relative min-h-[900px] md:min-h-screen p-8 md:p-24 bg-white">
+                    <div className="flex flex-col items-center mb-12 md:mb-20 text-center">
+                       <span className="text-slate-400 font-black mb-4 uppercase tracking-[0.6em] text-[10px] md:text-xs opacity-100">SECTION {idx + 1}</span>
+                       <h3 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter italic uppercase break-words px-4 leading-[0.9] md:leading-none serif-font">{chapter.title}</h3>
+                       <div className="w-16 h-1.5 bg-[#0f172a] mt-10 md:mt-12 rounded-full"></div>
                     </div>
-                    <div className="text-slate-800 leading-[1.8] md:leading-[2.2] text-lg md:text-2xl text-justify space-y-8 md:space-y-12 px-2 md:px-0 max-w-3xl mx-auto">
+                    <div className="chapter-content-box prose prose-lg md:prose-2xl text-slate-800 leading-[1.8] md:leading-[2.2] space-y-6 md:space-y-10 px-2 md:px-0 max-w-2xl mx-auto serif-font">
                       {paragraphs.map((para, i) => {
                         if (i === 0) {
                           const firstLetter = para.charAt(0);
                           const rest = para.substring(1);
                           return (
                             <p key={i} className="relative">
-                              <span className="text-6xl md:text-9xl font-black text-[#0f172a] mr-4 md:mr-6 float-left leading-[0.8] inline-block mt-2">
-                                {firstLetter}
-                              </span>
+                              <span className="drop-cap select-none">{firstLetter}</span>
                               {rest}
                             </p>
                           );
@@ -437,7 +442,7 @@ const App: React.FC = () => {
                       })}
                     </div>
                     <div className="print:block hidden absolute bottom-0 left-0 right-0 text-center text-slate-300 text-[10px] font-black tracking-[0.5em] pb-12">
-                      MANUSCRIPT PAGE {idx + 1} • {book.author.toUpperCase()}
+                      MANUSCRIPT PAGE {idx + 3} • {book.author.toUpperCase()}
                     </div>
                   </div>
                 );
